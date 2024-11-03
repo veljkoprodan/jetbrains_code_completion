@@ -43,5 +43,5 @@ for code, middle_len in zip(codes, middle_lens):
     
     dataset.append(data)
     
-with open('dataset_512.json', 'w') as file:
+with open('dataset.json', 'w') as file:
     json.dump(dataset, file)
