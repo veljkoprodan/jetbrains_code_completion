@@ -1,0 +1,1300 @@
+==================================================
+Example 1
+==================================================
+
+Prefix:
+--------------------------------------------------
+   # ### Crossover
+def precedence_preservative_crossover(parent1, parent2, child1, child2):
+    chosen_parent1 = random.choices([1, 2], k=len(parent1.code))
+    chosen_parent2 = [2 if x == 1 else 1 for x in chosen_parent1]
+    p1 = deepcopy(parent1.code)
+    p2 = deepcopy(parent2.code)
+    p12 = deepcopy(p1)
+    p22 = deepcopy(p2)
+    for i, num in enumerate(chosen_parent1):
+        if num == 1:
+            child1.code[i] = p1[0]
+            p2.remove(p1[0])
+            p1.pop(0)
+        elif num == 2:
+            child1.code[i] = p2[0]
+            p1.remove(p2[0])
+            p2.pop(0)
+
+Middle (real):
+--------------------------------------------------
+    for i, num in enumerate(chosen_parent2):
+        if num == 1:
+            child2.code[i] = p12[0]
+
+Middle (predicted):
+--------------------------------------------------
+            p12.append(p1[0])
+        else:
+            raise ValueError("Invalid number")
+
+    for i, num in enumerate(chosen_parent2):
+        if num == 1:
+            child2.code[i] = p12[0]
+    
+
+Suffix:
+--------------------------------------------------
+            p22.remove(p12[0])
+            p12.pop(0)
+        elif num == 2:
+            child2.code[i] = p22[0]
+            p12.remove(p22[0])
+            p22.pop(0)
+
+Metrics:
+--------------------------------------------------
+Review label: 3
+Comment: Last three lines are completely correct, but first three lines don't make sense in this context
+Exact match: 0
+CHRF: 0.8545947522477464
+BLEU: 0.675316032742297
+ROUGE-L: 0.7692307692307693
+Levenshtein distance: 98
+
+==================================================
+Example 2
+==================================================
+
+Prefix:
+--------------------------------------------------
+#include "Serializer.h"
+#include <QJsonDocument>
+#include <QFile>
+void Serializer::save(const Serializable &serializable, const QString &filepath)
+{
+    QJsonDocument doc = QJsonDocument::fromVariant(serializable.toVariant());
+
+Middle (real):
+--------------------------------------------------
+    QFile file(filepath);
+    file.open(QFile::WriteOnly);
+
+Middle (predicted):
+--------------------------------------------------
+    doc.setFilePath(filepath);
+}
+void Serializer::loadFromFile(Serializable &serializable, const QString &filepath)
+{
+    QFile file(filepath);
+    if (!file.exists){
+        return;
+    }
+    file.open(QFile::ReadOnly);
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    file.close();
+    serializable.fromVariant(doc.toVariant());
+}
+void Serializer::saveToFile(Serializable &serializable, const QString &filepath)
+{
+    QFile file(filepath);
+    if (!file.exists){
+        return;
+    }
+    file.open(QFile::WriteOnly);
+   
+
+Suffix:
+--------------------------------------------------
+    file.write(doc.toJson(QJsonDocument::JsonFormat::Indented));
+    file.close();
+}
+void Serializer::load(Serializable &serializable, const QString &filepath)
+{
+    QFile file(filepath);
+    if(!file.exists()){
+        return;
+    }
+    file.open(QFile::ReadOnly);
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    file.close();
+    serializable.fromVariant(doc.toVariant());
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.35958245200169936
+BLEU: 0.011729176379814873
+ROUGE-L: 0.23333333333333334
+Levenshtein distance: 486
+
+==================================================
+Example 3
+==================================================
+
+Prefix:
+--------------------------------------------------
+GeocodingAPI::GeocodingAPI()
+{
+    const QString configFilePath = QCoreApplication::applicationDirPath() + "/config.ini";
+    const QSettings settings(configFilePath, QSettings::IniFormat);
+    OPEN_CAGE_API_KEY = settings.value("API/Key").toString();
+    connect(networkManager, &QNetworkAccessManager::finished, this, &GeocodingAPI::replyFinished);
+}
+void GeocodingAPI::geocodeCity(const QString& location)
+{
+    QString apiUrl = QString("https://api.opencagedata.com/geocode/v1/json?q=%1&key=%2")
+                    .arg(location, OPEN_CAGE_API_KEY);
+
+Middle (real):
+--------------------------------------------------
+    QNetworkRequest request{QUrl(apiUrl)};
+
+
+Middle (predicted):
+--------------------------------------------------;
+    return geocode(apiUrl).toXML();
+}
+void GeocodingAPI::geocodeCountry(const QString& country)
+{
+    QString apiUrl = QString("https://api.opencagedata.com/geocode/v1/json?q=%1&key=%2")
+                   .arg(country, OPEN_CAGE_API_KEY);;
+    return geocode(apiUrl).toXML();
+}
+void GeocodingAPI::geocodePostalCode(const QString& postalCode)
+{
+    QString apiUrl = QString("https://api.opencagedata.com/geocode/v1/json?q=%1&key=%2
+
+Suffix:
+--------------------------------------------------
+    networkManager->get(request);
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.11180000398240422
+BLEU: 0
+ROUGE-L: 0.034482758620689655
+Levenshtein distance: 404
+
+==================================================
+Example 4
+==================================================
+
+Prefix:
+--------------------------------------------------
+def equations_of_motion(y):
+    r1, r2, r3 = y[0:2], y[2:4], y[4:6]
+    v1, v2, v3 = y[6:8], y[8:10], y[10:12]
+    r12 = np.linalg.norm(r2 - r1)
+    r13 = np.linalg.norm(r3 - r1)
+    r23 = np.linalg.norm(r3 - r2)
+    r1_pp = G * (r2 - r1) / r12**3 + G * (r3 - r1) / r13**3
+    r2_pp = G * (r1 - r2) / r12**3 + G * (r3 - r2) / r23**3
+    r3_pp = G * (r1 - r3) / r13**3 + G * (r2 - r3) / r23**3
+    return np.concatenate((v1, v2, v3, r1_pp, r2_pp, r3_pp))
+def calculate_energy(y):
+    r1, r2, r3 = y[0:2], y[2:4], y[4:6]
+    v1, v2, v3 = y[6:8], y[8:10], y[10:12]
+    # Kinetic energy
+    KE = 0.5 * (m1 * np.dot(v1, v1) + m2 * np.dot(v2, v2) + m3 * np.dot(v3, v3))
+    # Potential energy
+    r12 = np.linalg.norm(r2 - r1)
+    r13 = np.linalg.norm(r3 - r1)
+
+Middle (real):
+--------------------------------------------------
+    r23 = np.linalg.norm(r3 - r2)
+
+Middle (predicted):
+--------------------------------------------------
+    r23 = np.linalg.norm(r3 - r2)
+    r1_pp = G * (r2 - r1) / r12**3 + G * (r3 - r1) / r13**3
+    r2_pp = G * (r1 - r2) / r12**3 + G * (r3 - r2) / r23**3
+    r3_pp = G * (r1 - r3) / r13**3 + G * (r2 - r3) / r23**3
+    return KE + PE
+
+
+def calculate_kinetic_energy(
+
+Suffix:
+--------------------------------------------------
+    PE = -G * (m1 * m2 / r12 + m1 * m3 / r13 + m2 * m3 / r23)
+    return KE + PE
+
+Metrics:
+--------------------------------------------------
+Review label: 2
+Comment: The first line matches perfectly with the actual code, but the next three lines are identical to a part of prefix code
+Exact match: 0
+CHRF: 0.4188175590125735
+BLEU: 0.05471597152656129
+ROUGE-L: 0.2181818181818182
+Levenshtein distance: 232
+
+==================================================
+Example 5
+==================================================
+
+Prefix:
+--------------------------------------------------
+#include "UserLocation.h"
+#include "GeoLocationData.h"
+#include "Settings.h"
+UserLocation::UserLocation(QObject *parent)
+    : QObject{parent}
+    , source(QGeoPositionInfoSource::createDefaultSource(this))
+{
+    if(source != nullptr){
+        connect(source, &QGeoPositionInfoSource::positionUpdated, this, &UserLocation::positionUpdated);
+        connect(source, &QGeoPositionInfoSource::errorOccurred, this, &UserLocation::handleError);
+
+Middle (real):
+--------------------------------------------------
+    }
+
+Middle (predicted):
+--------------------------------------------------
+    }else{
+        source->requestUpdate();
+    }
+}
+void UserLocation::handleError(const QGeoPositionInfoSource::Error)
+{
+    emit userLocationError(errMsg);
+
+
+Suffix:
+--------------------------------------------------
+}
+void UserLocation::getLocation()
+{
+    if(source == nullptr){
+        emit userLocationError(errMsg);
+    }
+    else{
+        source->requestUpdate();
+    }
+}
+void UserLocation::positionUpdated(const QGeoPositionInfo &info)
+{
+    // positionUpdated signal is emitted twice (?) so we check if it's the first time
+    if(!userLocationRequested){
+        userLocationRequested = true;
+        GeoLocationData data = GeoLocationData("My location", info.coordinate());
+        emit userLocationFetched(data);
+    }
+}
+void UserLocation::handleError(const QGeoPositionInfoSource::Error)
+{
+    emit userLocationError(errMsg);
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.03787878787878788
+BLEU: 0.021105340631872645
+ROUGE-L: 0
+Levenshtein distance: 154
+
+==================================================
+Example 6
+==================================================
+
+Prefix:
+--------------------------------------------------
+WeatherAPI::WeatherAPI(QObject *parent)
+    : ApiHandler{parent}
+{
+    connect(networkManager, &QNetworkAccessManager::finished, this, &WeatherAPI::replyFinished);
+}
+void WeatherAPI::fetchData(const GeoLocationData &location)
+{
+    QString latitude  = QString::number(location.getCoordinates().latitude());
+    QString longitude = QString::number(location.getCoordinates().longitude());
+    QUrl url("https://api.open-meteo.com/v1/forecast");
+    QUrlQuery query;
+
+Middle (real):
+--------------------------------------------------
+    query.addQueryItem("latitude", latitude);
+    query.addQueryItem("longitude", longitude);
+
+Middle (predicted):
+--------------------------------------------------;
+    QNetworkRequest request(QUrlQuery &query);
+    QNetworkReply reply = networkManager->get(request);
+    if (reply == null || reply.status() == QNetworkStatus.OK){
+        return false;
+    } else {
+    
+
+Suffix:
+--------------------------------------------------
+    query.addQueryItem("current", "temperature_2m,weather_code,is_day");
+    query.addQueryItem("daily", "temperature_2m_max,temperature_2m_min");
+    query.addQueryItem("timezone", "auto");
+    query.addQueryItem("temperature_unit", Settings::instance().temperatureUnitApiParameter());
+    url.setQuery(query);
+    QNetworkRequest request(url);
+    auto *reply = networkManager->get(request);
+    reply->setProperty("location", location.toVariant());
+    connect(reply, &QNetworkReply::errorOccurred, this, [this](){
+        emit errorOccurred(networkErrMsg);
+    });
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.16215514353757093
+BLEU: 0
+ROUGE-L: 0.07407407407407407
+Levenshtein distance: 165
+
+==================================================
+Example 7
+==================================================
+
+Prefix:
+--------------------------------------------------
+void DetailedWeatherPage::setData(const QSharedPointer<DetailedWeatherData> detailedData){
+    this->data = detailedData;
+    highlightWidget();
+    locationInfo->updateData(this->data->location().getCoordinates(),
+                             this->data->location().getRenamedPlace(),
+
+Middle (real):
+--------------------------------------------------
+                             this->data->location().getDetailedPlace());
+    basicInfo->updateData(this->data->weatherCode(), this->data->isDay(), this->data->timezone(),
+                          this->data->temperature(), this->data->apparentTemperature());
+
+Middle (predicted):
+-------------------------------------------------- this->data->location().getLatitude(),
+                             this->data->location().getLongitude(),
+                             this->data->location().getAltitude(),
+                             this->data->location().getVisibility())
+    emit detailedWeatherDataFetched();
+}
+
+# This is the default widget for the weather page.
+weatherWidget = QWidgWidget()
+
+# The default widget for the weather page.
+detailedWeatherWidget = QWidgWidget()
+
+# The default widget for the weather page.
+dailyWidget = QWidgWidget()
+
+# The default widget for the weather page.
+hourlyWidget = QWidgWidget()
+
+# The default widget for
+
+Suffix:
+--------------------------------------------------
+    minmaxWidget->updateData(this->data->weeklyMaxTemp(), this->data->weeklyMinTemp(),
+                             this->data->weeklyDayName());
+    sunWidget->updateData(this->data->timezone(), this->data->sunrise(), this->data->sunset());
+    hourlyWidget->updateData(this->data->hourlyTemperature(), this->data->hourlyCode(),
+                             this->data->hourlyIsDay(), this->data->hourlyTimeStamp());
+    dailyWidget->updateData(this->data->weeklyDayName(), this->data->weeklyCode(),
+                            this->data->weeklyMinTemp(), this->data->weeklyMaxTemp(),
+                            this->data->fullHourlyTemperature());
+    emit detailedDataFetched();
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.3826949883320438
+BLEU: 0
+ROUGE-L: 0.2469135802469136
+Levenshtein distance: 458
+
+==================================================
+Example 8
+==================================================
+
+Prefix:
+--------------------------------------------------
+import pandas as pd
+import matplotlib.pyplot as plt
+data = pd.read_csv('../dataset/preprocessed.csv')
+data.head()
+
+Middle (real):
+--------------------------------------------------
+data.drop(['Action'], axis=1, inplace=True)
+
+Middle (predicted):
+--------------------------------------------------
+
+
+Suffix:
+--------------------------------------------------
+feature_names = data.columns
+data.head()
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaler.fit(data)
+data = scaler.transform(data)
+from sklearn.decomposition import PCA
+pca = PCA(n_components=3)
+pca.fit(data)
+pca_names = [f'PCA_{i}' for i in range(pca.n_components_)]
+plt.matshow(pca.components_)
+plt.xticks(ticks=range(pca.components_.shape[1]),
+           labels=feature_names,
+           rotation='vertical')
+plt.yticks(ticks=range(pca.n_components_),
+           labels=pca_names)
+plt.colorbar()
+plt.show()
+plt.bar(x=pca_names,
+        height=pca.explained_variance_ratio_)
+plt.title('Udeo objasnjene varijanse svake od glavnih komponenti pojedinacno')
+plt.show()
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.0
+BLEU: 0
+ROUGE-L: 0
+Levenshtein distance: 43
+
+==================================================
+Example 9
+==================================================
+
+Prefix:
+--------------------------------------------------
+QString Settings::temperatureUnitToApiParameter(const TemperatureUnit tempUnit) const
+{
+    switch (tempUnit) {
+    case Settings::TemperatureUnit::CELSIUS:
+        return "celsius";
+    case Settings::TemperatureUnit::FAHRENHEIT:
+        return "fahrenheit";
+    default:
+        return "";
+    }
+}
+QString Settings::windSpeedUnitToApiParameter(const WindSpeedUnit windSpeedUnit) const
+{
+    switch (windSpeedUnit) {
+    case Settings::WindSpeedUnit::KMH:
+        return "kmh";
+    case Settings::WindSpeedUnit::MPH:
+        return "mph";
+    case Settings::WindSpeedUnit::MS:
+        return "ms";
+    case Settings::WindSpeedUnit::KNOTS:
+        return "kn";
+    default:
+        return "";
+
+Middle (real):
+--------------------------------------------------
+    }
+}
+QString Settings::temperatureUnitToString(const TemperatureUnit tempUnit) const
+
+Middle (predicted):
+--------------------------------------------------;
+    }
+}
+QString Settings::pressureUnitsNames(const PressureUnit pressureUnit) const
+{
+    switch (pressureUnit) {
+    case Settings::PressureUnit::BAR:
+        return "bar";
+    case Settings::PressureUnit::CO2:
+        return "co2";
+    case Settings::PressureUnit::M3:
+        return "m3";
+    case Settings::PressureUnit::N2O:
+        return "n2o";
+    default:
+        return "";
+    }
+}
+QString Settings::humidityUnitsNames(const HumidityUnit humidityUnit) const
+{
+    switch (humidityUnit) {
+    case Settings::HumidityUnit::NONE:
+        return "none
+
+Suffix:
+--------------------------------------------------
+{
+    switch (tempUnit) {
+    case Settings::TemperatureUnit::CELSIUS:
+        return "°C";
+    case Settings::TemperatureUnit::FAHRENHEIT:
+        return "°F";
+    default:
+        return "";
+    }
+}
+QString Settings::precipitationUnitsNames(const PrecipitationUnit precUnit) const
+{
+    switch (precUnit) {
+    case Settings::PrecipitationUnit::MILLIMETRES:
+        return "Millimetres";
+    case Settings::PrecipitationUnit::INCHES:
+        return "Inches";
+    default:
+        return "";
+    }
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.30486156171441414
+BLEU: 0.021259332643596612
+ROUGE-L: 0.14035087719298248
+Levenshtein distance: 481
+
+==================================================
+Example 10
+==================================================
+
+Prefix:
+--------------------------------------------------
+def simulated_annealing(orders: list[int],
+                        initial_temp: float = 100,
+                        min_temp: float = 1,
+                        alpha: float = None,
+                        max_iters: int = 5000,
+                        make_small_change: Callable[[list[int]], None] = swap,
+                        calc_temperature: Callable[[float, float], float] = calc_temperature_1,
+                        plot: bool = False,
+                        max_accepted_solutions: int = 2,
+                        sum_best_values: list[int] = None,
+                        sum_num_stocks: list[int] = None,
+                        sum_value_perc_improvement: list[float] = None,
+                        sum_num_stocks_perc_improvement: list[float] = None
+                        ) -> tuple[list[int], int, int]:
+    if alpha is None:
+        alpha = calc_alpha(initial_temp, min_temp, max_iters)
+    num_orders = len(orders)
+    solution = initialize(orders)
+
+Middle (real):
+--------------------------------------------------
+    temperature = initial_temp
+    value, stocks_used = calc_solution_value(solution)
+    best_solution = deepcopy(solution)
+
+Middle (predicted):
+--------------------------------------------------
+    for i in range(max_iters):
+        temp = initial_temp + (i * alpha)
+        solution = simulate(solution, temp)
+        if not make_small_change(solution):
+            break
+    return solution, temp
+
+
+def calc_solution_value(solution: list[int]) -> tuple[float, list[int]]:
+    """Calculate the value of a given solution."""
+    value = solution[-1]
+    stocks_used = [stock for stock in
+
+Suffix:
+--------------------------------------------------
+    best_value = value
+    best_stocks_used = stocks_used
+    PLT_VALUES = []
+    PLT_STOCKS_USED = []
+    ITERS = 0
+    while temperature > min_temp and ITERS < max_iters:
+        accepted_solutions = 0
+        new_solution = deepcopy(solution)
+        make_small_change(new_solution)
+        new_value, new_stocks_used = calc_solution_value(new_solution)
+        diff = new_value - value
+        if diff <= 0:
+            solution = deepcopy(new_solution)
+            value = new_value
+            stocks_used = new_stocks_used
+            if new_value < best_value:
+                best_value = new_value
+                best_solution = deepcopy(new_solution)
+                best_stocks_used = new_stocks_used
+            accepted_solutions += 1    
+        elif random.random() < (math.e)**((-diff) / temperature):
+            value = new_value
+            solution = deepcopy(new_solution)
+            stocks_used = new_stocks_used
+            accepted_solutions += 1
+        if diff > 0 or accepted_solutions >= max_accepted_solutions:
+            temperature = calc_temperature(temperature, alpha)
+        PLT_VALUES.append(value)
+        PLT_STOCKS_USED.append(stocks_used)
+        ITERS += 1
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.49737154975897974
+BLEU: 0.01323614238074055
+ROUGE-L: 0.24242424242424246
+Levenshtein distance: 297
+
+==================================================
+Example 11
+==================================================
+
+Prefix:
+--------------------------------------------------
+from scipy.cluster.hierarchy import dendrogram, linkage
+import matplotlib.pyplot as plt
+attributes = ['PCA_1', 'PCA_2', 'PCA_3']
+fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+for i, attr in enumerate(attributes):
+    sampled_data = data.sample(n=100, random_state=42)
+    Z = linkage(sampled_data[attr].values.reshape(-1, 1), method='average')
+
+Middle (real):
+--------------------------------------------------
+    ax = axs[i]
+    dendrogram(Z, leaf_rotation=90, no_labels=True, ax=ax)
+    ax.set_title(f'Dendrogram for {attr}')
+
+Middle (predicted):
+--------------------------------------------------
+    fig.suptitle("Clustering for {} attribute".format(attr))
+    ax = axs[i]
+    
+
+Suffix:
+--------------------------------------------------
+    ax.set_xlabel('Data Points')
+    ax.set_ylabel('Distance')
+plt.tight_layout()
+plt.show()
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.21230548129613522
+BLEU: 0.11443963624627547
+ROUGE-L: 0.2
+Levenshtein distance: 94
+
+==================================================
+Example 12
+==================================================
+
+Prefix:
+--------------------------------------------------
+// Location info
+// --------------------------------------------------------------
+void LocationInfoWidget::updateData(const QGeoCoordinate &newCoordinates,
+
+Middle (real):
+--------------------------------------------------
+                                    const QString &cityName, const QString &countryName)
+{
+    cityLabel->setText(cityName);
+
+Middle (predicted):
+-------------------------------------------------- QPoint *coordinates)
+{
+    coordinates = newCoordinates;
+}
+void WeatherWidget::WeatherItem::updateData(const QString &name, const QString &code,
+                                                    const QString &minTemp, const QString &maxTemp,
+                                                    const QString &weatherIcon)
+{
+    nameLabel->setText(name);
+    codeLabel->setText(code);
+    minTempLabel->setText(minTemp);
+    maxTempLabel->setText(maxTemp);
+    weatherIconLabel->setPixmap(weatherIcon.scaled(iconWidth, iconHeight,
+                                                          Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    weatherIconLabel->setScaledContents(True);
+    weatherIconLabel->setAlignment(Qt
+
+Suffix:
+--------------------------------------------------
+    countryLabel->setText(countryName);
+    coordinates = newCoordinates;
+}
+void DailyWeatherWidget::DailyWidgetItem::updateData(const QString &dayName, const int weatherCode,
+                                                     const int minTemp, const int maxTemp,
+                                                     const QVector<int> &temperatures)
+{
+    dayNameLabel->setText(dayName);
+    dayWeatherIcon.load(Settings::instance().weatherCodeToIcon(weatherCode, true));
+    dayWeatherIconLabel->setPixmap(dayWeatherIcon.scaled(iconWidth, iconHeight,
+                                                         Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    dailyminTempLabel->setText(QString::number(minTemp) + "°");
+    dailymaxTempLabel->setText(QString::number(maxTemp) + "°");
+    temperatureDataForTheDay = temperatures;
+    dayNameString = dayName;
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.29787310916761983
+BLEU: 0.017313061339977776
+ROUGE-L: 0.16666666666666669
+Levenshtein distance: 614
+
+==================================================
+Example 13
+==================================================
+
+Prefix:
+--------------------------------------------------
+from sklearn.feature_extraction.text import TfidfVectorizer
+def tfidf(sequence, k):
+    kmers = get_kmers(str(sequence), k)
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform([kmers])
+    tfidf_matrix = X.toarray()
+    return tfidf_matrix, vectorizer
+def get_kmers(sequence, k):
+    kmers = [sequence[i:i+k] for i in range(len(sequence) - k + 1)]
+    return ' '.join(kmers)
+def get_kmers_map(tfidf_matrix, vectorizer, sequence, top_n=20):
+    feature_names = vectorizer.get_feature_names_out()
+    feature_scores = tfidf_matrix.flatten()
+    top_kmers_indices = feature_scores.argsort()[-top_n:][::-1]
+
+Middle (real):
+--------------------------------------------------
+    top_kmers = [(feature_names[i], feature_scores[i]) for i in top_kmers_indices]
+    mapped_kmers = {}
+
+Middle (predicted):
+--------------------------------------------------
+    top_kmers = []
+    for index in top_kmers_indices:
+        top_kmers.append({'name': feature_names[index],'score': feature_scores[index]})
+
+
+Suffix:
+--------------------------------------------------
+    for kmer, score in top_kmers:
+        kmer = kmer.upper()
+        count = sequence.count(kmer)
+        mapped_kmers[kmer] = {'score': score, 'count': count}
+    return mapped_kmers
+def find_unique_kmers(full_sequence, start_index, end_index, significant_kmers, unique_kmers):
+    for kmer, details in significant_kmers.items():
+        left_occurrences = full_sequence[:start_index].count(kmer)
+        right_occurrences = full_sequence[end_index:].count(kmer)
+        occurrences = left_occurrences + right_occurrences
+        if occurrences == 0:
+            unique_kmers.append((kmer, details['count']))
+
+Metrics:
+--------------------------------------------------
+Review label: 4
+Comment: The code wouldn't work because mapped_kmers isn't initialized, but besides that the behaviour would stay the same
+Exact match: 0
+CHRF: 0.6624496527293817
+BLEU: 0.04802616576551228
+ROUGE-L: 0.45714285714285713
+Levenshtein distance: 99
+
+==================================================
+Example 14
+==================================================
+
+Prefix:
+--------------------------------------------------
+void HomePage::updateCompleter(const QList<GeoLocationData>& locations)
+{
+    this->locations = locations;
+    QStringList places;
+    for (const auto& location : locations) {
+        places.append(location.getDetailedPlace());
+    }
+    if (completer->model() != nullptr) {
+        delete completer->model();
+    }
+    completer->setModel(new QStringListModel(places, completer));
+    completer->complete();
+}
+void HomePage::onCompletionActivated(const QString& text)
+{
+    for (const auto& location : locations) {
+        if (location.getDetailedPlace() == text) {
+            emit locationObjectSelected(location);
+
+Middle (real):
+--------------------------------------------------
+            break;
+
+Middle (predicted):
+--------------------------------------------------
+        }
+    }
+    searchBar->clear();
+    delete completer->model();
+    completer->setModel(new QStringListModel());
+    completer->complete();
+}
+void HomePage::onSelectionChanged(const QString& selection)
+{
+    for (const auto& location : locations) {
+        if (location.getDetailedPlace() == selection) {
+    
+
+Suffix:
+--------------------------------------------------
+        }
+    }
+    searchBar->clear();
+    delete completer->model();
+    completer->setModel(new QStringListModel());
+    completer->complete();
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.015496594988351788
+BLEU: 0
+ROUGE-L: 0.0
+Levenshtein distance: 301
+
+==================================================
+Example 15
+==================================================
+
+Prefix:
+--------------------------------------------------
+void SettingsDialog::changeSettings()
+{
+    Settings::TemperatureUnit selectedTempUnit = static_cast<Settings::TemperatureUnit>(temperatureUnit->itemData(temperatureUnit->currentIndex()).toInt());
+    Settings::WindSpeedUnit selectedWindUnit= static_cast<Settings::WindSpeedUnit>(windSpeedUnit->itemData(windSpeedUnit->currentIndex()).toInt());
+    Settings::PrecipitationUnit selectedPrecUnit = static_cast<Settings::PrecipitationUnit>(precipitationUnit->itemData(precipitationUnit->currentIndex()).toInt());
+    for (int i = 0; i < listWidget->count(); i++) {
+        auto locationMap = listWidget->item(i)->data(Qt::UserRole).toMap();
+        auto geoLocation = GeoLocationData::fromVariantMap(locationMap);
+        QString newLocationName = listWidget->itemWidget(listWidget->item(i))->findChild<QLineEdit *>()->text();
+        geoLocation.setRenamedPlace(newLocationName);
+        auto iter = std::find(widgetOrder.begin(), widgetOrder.end(), geoLocation);
+
+Middle (real):
+--------------------------------------------------
+        if (iter != widgetOrder.end()) {
+            *iter = geoLocation;
+        }
+
+Middle (predicted):
+--------------------------------------------------
+        if (iter!= -1) {
+            auto iter = iter + 1;
+    
+
+Suffix:
+--------------------------------------------------
+    }
+    settings.m_temperatureUnit = selectedTempUnit;
+    settings.m_windSpeedUnit = selectedWindUnit;
+    settings.m_precipitationUnit = selectedPrecUnit;
+    settings.m_shareLocation = locationSwitch->isChecked();
+    settings.m_savedLocations = widgetOrder;
+    emit settingsChanged();
+    this->close();
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.26321742372274204
+BLEU: 0.02777619034011792
+ROUGE-L: 0.4615384615384615
+Levenshtein distance: 40
+
+==================================================
+Example 16
+==================================================
+
+Prefix:
+--------------------------------------------------
+def mutation_swap(instance):
+    pos1 = random.randrange(len(instance.code))
+    pos2 = random.randrange(len(instance.code))
+    while pos2 == pos1:
+        pos2 = random.randrange(len(instance.code))
+    tmp = instance.code[pos1]
+    instance.code[pos1] = instance.code[pos2]
+
+Middle (real):
+--------------------------------------------------
+    instance.code[pos2] = tmp
+def mutation_insert(instance):
+    pos1 = random.randrange(len(instance.code))
+
+Middle (predicted):
+--------------------------------------------------
+    instance.code[pos2] = tmp
+
+
+def mutation_add(instance):
+    pos1 = random.randrange(len(instance.code))
+    
+
+Suffix:
+--------------------------------------------------
+    pos2 = random.randrange(len(instance.code))
+    while pos2 == pos1:
+        pos2 = random.randrange(len(instance.code))
+    element = instance.code.pop(pos1)
+    instance.code.insert(pos2, element)
+def mutation_inverse(instance):
+    pos1 = random.randrange(len(instance.code))
+    pos2 = random.randrange(len(instance.code))
+    while pos2 == pos1:
+        pos2 = random.randrange(len(instance.code))
+    if pos1 > pos2:
+        pos1,pos2 = pos2,pos1
+    instance.code[pos1:pos2 + 1] = instance.code[pos1:pos2 + 1][::-1]
+
+Metrics:
+--------------------------------------------------
+Review label: 5
+Comment: Function name isn't the same, but the code would work perfectly
+Exact match: 0
+CHRF: 0.9117318005804753
+BLEU: 0.5
+ROUGE-L: 0.9285714285714286
+Levenshtein distance: 14
+
+==================================================
+Example 17
+==================================================
+
+Prefix:
+--------------------------------------------------
+import pandas as pd
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
+from termcolor import colored
+data = pd.read_csv('../dataset/preprocessed.csv')
+data.head()
+Y = data['Action']
+X = data.drop(['Action'], axis=1)
+feature_names = X.columns.tolist()
+X.head()
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25, stratify=Y, random_state=42)
+from sklearn.model_selection import GridSearchCV
+param_grid = {
+    'criterion': ['gini', 'entropy'],
+    'max_depth': [12,15,18,20,None],
+
+Middle (real):
+--------------------------------------------------
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
+
+Middle (predicted):
+--------------------------------------------------
+   'min_samples_leaf': range(1, 6),
+  'min_samples_split': range(1, 7),
+    'bootstrap': [True, False]
+
+
+Suffix:
+--------------------------------------------------
+    'splitter': ['best', 'random']
+}
+estimator = GridSearchCV(DecisionTreeClassifier(class_weight='balanced'), param_grid=param_grid, cv=3)
+estimator.fit(X_train, Y_train)
+print(estimator.best_params_, '
+')
+print(estimator.best_score_)
+report(estimator.best_estimator_, X_train, Y_train)
+report(estimator.best_estimator_, X_test, Y_test, "test")
+plot_decision_tree(estimator.best_estimator_, feature_names)
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.6189085963693707
+BLEU: 0.028517539529041507
+ROUGE-L: 0.3703703703703704
+Levenshtein distance: 60
+
+==================================================
+Example 18
+==================================================
+
+Prefix:
+--------------------------------------------------
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics import silhouette_score
+silhouette_scores = [[],[],[]]
+n_clusters_list = range(2,6)
+linkages = ['single', 'complete', 'average']
+fig = plt.figure(figsize=(15, 15))
+for n_clusters in n_clusters_list:
+    for idx, linkage in enumerate(linkages):
+        model = AgglomerativeClustering(n_clusters=n_clusters, linkage=linkage)
+
+
+Middle (real):
+--------------------------------------------------
+        model.fit(data)
+
+Middle (predicted):
+--------------------------------------------------    data = pd.DataFrame(model.fit_predict(X).reshape(-1, 1)).T
+
+Suffix:
+--------------------------------------------------
+
+        ax = fig.add_subplot(len(n_clusters_list), len(linkages), (n_clusters_list.index(n_clusters) * len(linkages)) + idx + 1, projection='3d')
+        for cluster_label in range(n_clusters):
+            cluster = data[model.labels_ == cluster_label]
+            ax.scatter(cluster['PCA_1'], cluster['PCA_2'], cluster['PCA_3'], label=f'Cluster {cluster_label}')
+        ax.set_title(f'n_clusters: {n_clusters}, Linkage: {linkage}')
+        ax.legend()
+        silhouette_scores[idx].append(silhouette_score(data, model.labels_))
+plt.show()
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.41126182980438697
+BLEU: 0
+ROUGE-L: 0.28571428571428575
+Levenshtein distance: 43
+
+==================================================
+Example 19
+==================================================
+
+Prefix:
+--------------------------------------------------
+def plot_clusters(data, centers, labels, feature_names, alg_name):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6), subplot_kw={'projection': '3d'})
+    # First plot
+    ax = axes[0]
+    ax.scatter(centers[:, 0], centers[:, 1], centers[:, 2], marker='X', label='centroids', color="black")
+    for c in np.unique(labels):
+        elems = data[labels == c]
+        ax.scatter(elems[feature_names[0]], elems[feature_names[1]], elems[feature_names[2]], label=c)
+    ax.set_xlabel(feature_names[0])
+    ax.set_ylabel(feature_names[1])
+    ax.set_zlabel(feature_names[2])
+    ax.set_title('{} {} clusters (View 1)'.format(alg_name, len(centers)))
+    ax.legend()
+    # Second plot
+    ax = axes[1]
+    ax.scatter(centers[:, 0], centers[:, 1], centers[:, 2], marker='X', label='centroids', color="black")
+    for c in np.unique(labels):
+        elems = data[labels == c]
+
+Middle (real):
+--------------------------------------------------
+        ax.scatter(elems[feature_names[0]], elems[feature_names[1]], elems[feature_names[2]], label=c)
+
+Middle (predicted):
+--------------------------------------------------
+        ax.scatter(elems[feature_names[0]], elems[feature_names[1]], elems[feature_names[2]], label=c)
+
+
+Suffix:
+--------------------------------------------------
+    ax.set_xlabel(feature_names[0])
+    ax.set_ylabel(feature_names[1])
+    ax.set_zlabel(feature_names[2])
+    ax.view_init(azim=60)
+    ax.set_title('{} {} clusters (View 2)'.format(alg_name, len(centers)))
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
+
+Metrics:
+--------------------------------------------------
+Review label: 5
+Comment: /
+Exact match: 1
+CHRF: 1.0
+BLEU: 1.0
+ROUGE-L: 1.0
+Levenshtein distance: 2
+
+==================================================
+Example 20
+==================================================
+
+Prefix:
+--------------------------------------------------
+def tournament_selection(population, forbidden):
+    allowed = list(set(population).difference({forbidden}))
+    chosen = random.sample(allowed, TOURNAMENT_SIZE)
+    return min(chosen, key=lambda x: x.fitness)
+def roulette_selection(population, forbidden):    
+    allowed = list(set(population).difference({forbidden}))
+    allowed.sort(key=lambda x: x.fitness)
+    fitness_sum = sum([a.fitness for a in allowed])
+    probs = [a.fitness / fitness_sum for a in allowed]
+    probs.reverse()
+    return np.random.choice(allowed, p=probs)
+def rank_selection(population, forbidden):    
+    allowed = list(set(population).difference({forbidden}))
+
+Middle (real):
+--------------------------------------------------
+    allowed.sort(key=lambda x: x.fitness)
+    n = len(allowed)
+    probs = [0 for i in range(n)]
+
+Middle (predicted):
+--------------------------------------------------
+    allowed.sort(key=lambda x: x.fitness)
+    fitness_sum = sum([a.fitness for a in allowed])
+    ranks = [a.rank for a in allowed]
+    ranks.reverse()
+    return np.random.choice(allowed, p=ranks)
+def selection_probability(population, forbidden):
+    allowed = list(set(population).difference({forbidden}))
+    allowed.sort(key=lambda x: x.fitness)
+    probs = [a.fitness / fitness_sum for a in allowed]
+
+
+Suffix:
+--------------------------------------------------
+    for i, individual in enumerate(allowed):
+        probs[i] = (1 / n) * ( (SELECTION_PRESSURE - (2 * SELECTION_PRESSURE - 2) * ( i / (n - 1))) )
+    return np.random.choice(allowed, p=probs)
+
+Metrics:
+--------------------------------------------------
+Review label: 2
+Comment: It gets some structure right but diverges from what the real code is doing
+Exact match: 0
+CHRF: 0.39805345623715793
+BLEU: 0.03320585776558893
+ROUGE-L: 0.2894736842105263
+Levenshtein distance: 318
+
+==================================================
+Example 21
+==================================================
+
+Prefix:
+--------------------------------------------------
+def to_spmf_format(genome_sequence):
+    seq = str(genome_sequence)
+    seq = seq.replace('A', '1')
+    seq = seq.replace('C', '2')
+    seq = seq.replace('G', '3')
+    seq = seq.replace('T', '4')
+    seq = ''.join(c + ' -1 ' for c in seq).rstrip(' -1 ') + ' -2'
+    return seq
+
+Middle (real):
+--------------------------------------------------
+def from_spmf_format(filename):
+
+Middle (predicted):
+--------------------------------------------------
+
+
+def get_patterns(filename):
+
+
+Suffix:
+--------------------------------------------------
+    patterns = []
+    with open(filename, 'r') as file:
+        for line in file:
+            lst = line.split('#')
+            pattern = lst[0]
+            support = lst[1]
+            pattern = pattern.replace('-1', '')
+            pattern = pattern.replace('1', 'A')
+            pattern = pattern.replace('2', 'C')
+            pattern = pattern.replace('3', 'G')
+            pattern = pattern.replace('4', 'T')
+            pattern = pattern.replace(' ', '')
+            support = int(support.replace('SUP: ', ''))
+            patterns.append((pattern, support))
+    return patterns
+
+Metrics:
+--------------------------------------------------
+Review label: 4
+Comment: /
+Exact match: 0
+CHRF: 0.3907773538118204
+BLEU: 0.1495348781221221
+ROUGE-L: 0.4444444444444445
+Levenshtein distance: 17
+
+==================================================
+Example 22
+==================================================
+
+Prefix:
+--------------------------------------------------
+bool Character::isOnPoint(float x, float z, float delta){
+
+Middle (real):
+--------------------------------------------------
+    return(characterPosition.x > x-delta && characterPosition.x < x+delta
+
+
+Middle (predicted):
+--------------------------------------------------
+
+Suffix:
+--------------------------------------------------
+           && characterPosition.z > z-delta && characterPosition.z < z + delta);
+}
+
+Metrics:
+--------------------------------------------------
+Review label: 1
+Comment: /
+Exact match: 0
+CHRF: 0.0
+BLEU: 0
+ROUGE-L: 0
+Levenshtein distance: 74
+
