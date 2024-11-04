@@ -27,4 +27,4 @@ This repository contains the implementation and evaluation of code completion us
 - **Visualization**: Includes correlation analysis and metric comparisons in `metrics.ipynb`
 
 ## Results
-The complete analysis and findings can be found in `review.md`. Key findings include:
+The complete analysis and findings can be found in `review.md`.
