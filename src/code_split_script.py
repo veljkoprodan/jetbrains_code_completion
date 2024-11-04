@@ -30,11 +30,7 @@ padding = 1
 
 for code, middle_len in zip(codes, middle_lens):    
     lines = code.splitlines()
-    if i == 23:
-        idx = 1
-    else:
-        idx = random.choice(range(padding, len(lines) - middle_len - padding))
-    
+    idx = random.choice(range(padding, len(lines) - middle_len - padding))
     
     data = {}
     data['prefix'] = '\n'.join(lines[:idx])
